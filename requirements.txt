@@ -1,0 +1,6 @@
+flask
+flask-cors
+anthropic
+pinecone
+sentence-transformers
+python-dotenv

@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ChatSaaS — Panel Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0A0A0F; --bg2:#111118; --bg3:#1A1A24;
+      --border:rgba(255,255,255,.07); --border2:rgba(255,255,255,.12);
+      --text:#E8E8F0; --text2:#7878A0; --text3:#4A4A6A;
+      --accent:#6C63FF; --accent2:#A78BFA;
+      --green:#10B981; --green-bg:rgba(16,185,129,.1);
+      --red:#EF4444; --red-bg:rgba(239,68,68,.1);
+      --yellow:#F59E0B; --yellow-bg:rgba(245,158,11,.1);
+      --radius:12px; --radius-sm:8px;
+    }
+    html,body { height:100%; font-family:'Syne',sans-serif; background:var(--bg); color:var(--text); overflow:hidden; }
+
+    /* LOGIN */
+    .login-screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:var(--bg); z-index:100; }
+    .login-screen::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(108,99,255,.15) 0%,transparent 70%); }
+    .login-box { position:relative; width:420px; background:var(--bg2); border:1px solid var(--border2); border-radius:20px; padding:48px; box-shadow:0 40px 80px rgba(0,0,0,.6); }
+    .login-logo { display:flex; align-items:center; gap:12px; margin-bottom:40px; }
+    .login-logo-icon { width:40px; height:40px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+    .login-logo h1 { font-size:20px; font-weight:700; }
+    .login-logo span { font-size:11px; color:var(--text2); display:block; font-family:'DM Mono',monospace; }
+    .login-title { font-size:28px; font-weight:800; margin-bottom:8px; }
+    .login-sub { font-size:13px; color:var(--text2); margin-bottom:32px; }
+    .form-group { margin-bottom:16px; }
+    .form-label { font-size:12px; color:var(--text2); font-family:'DM Mono',monospace; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px; display:block; }
+    .form-input { width:100%; padding:12px 16px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:'DM Mono',monospace; font-size:14px; outline:none; transition:border-color .2s; }
+    .form-input:focus { border-color:var(--accent); }
+    select.form-input option { background:var(--bg3); }
+    textarea.form-input { resize:vertical; min-height:100px; }
+    .btn-login { width:100%; padding:14px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; border-radius:var(--radius-sm); color:#fff; font-family:'Syne',sans-serif; font-size:15px; font-weight:700; cursor:pointer; margin-top:8px; transition:opacity .2s,transform .2s; }
+    .btn-login:hover { opacity:.9; transform:translateY(-1px); }
+    .login-error { color:var(--red); font-size:12px; margin-top:12px; text-align:center; display:none; }
+
+    /* LAYOUT */
+    .app { display:grid; grid-template-columns:260px 1fr; height:100vh; }
+
+    /* SIDEBAR */
+    .sidebar { background:var(--bg2); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:24px 16px; overflow-y:auto; }
+    .brand { display:flex; align-items:center; gap:10px; padding:8px 12px; margin-bottom:32px; }
+    .brand-icon { width:36px; height:36px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+    .brand-text { font-size:16px; font-weight:800; }
+    .brand-sub { font-size:10px; color:var(--text2); font-family:'DM Mono',monospace; }
+    .nav-section { margin-bottom:24px; }
+    .nav-label { font-size:10px; color:var(--text3); letter-spacing:2px; text-transform:uppercase; font-family:'DM Mono',monospace; padding:0 12px; margin-bottom:8px; }
+    .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-sm); font-size:14px; font-weight:500; color:var(--text2); cursor:pointer; transition:all .15s; margin-bottom:2px; }
+    .nav-item:hover { background:var(--bg3); color:var(--text); }
+    .nav-item.active { background:rgba(108,99,255,.15); color:var(--accent2); }
+    .nav-icon { font-size:16px; width:20px; text-align:center; }
+    .sidebar-footer { margin-top:auto; padding-top:16px; border-top:1px solid var(--border); }
+    .logout-btn { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-sm); font-size:14px; color:var(--red); cursor:pointer; transition:background .15s; font-family:'Syne',sans-serif; background:none; border:none; width:100%; }
+    .logout-btn:hover { background:var(--red-bg); }
+
+    /* MAIN */
+    .main { display:flex; flex-direction:column; overflow:hidden; }
+    .topbar { background:var(--bg2); border-bottom:1px solid var(--border); padding:16px 32px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .topbar-title { font-size:22px; font-weight:800; }
+    .topbar-sub { font-size:12px; color:var(--text2); margin-top:2px; font-family:'DM Mono',monospace; }
+    .topbar-actions { display:flex; gap:10px; }
+    .btn { padding:9px 18px; border-radius:var(--radius-sm); font-family:'Syne',sans-serif; font-size:13px; font-weight:600; cursor:pointer; transition:all .2s; border:none; }
+    .btn-primary { background:var(--accent); color:#fff; }
+    .btn-primary:hover { background:var(--accent2); transform:translateY(-1px); }
+    .btn-ghost { background:var(--bg3); color:var(--text2); border:1px solid var(--border); }
+    .btn-ghost:hover { color:var(--text); border-color:var(--border2); }
+    .btn-danger { background:var(--red-bg); color:var(--red); border:1px solid rgba(239,68,68,.2); }
+    .btn-danger:hover { background:var(--red); color:#fff; }
+    .btn-success { background:var(--green-bg); color:var(--green); border:1px solid rgba(16,185,129,.2); }
+    .btn-success:hover { background:var(--green); color:#fff; }
+    .btn-sm { padding:6px 12px; font-size:12px; }
+    .btn:disabled { opacity:.4; cursor:not-allowed; transform:none !important; }
+
+    /* CONTENT */
+    .content { flex:1; overflow-y:auto; padding:32px; }
+    .content::-webkit-scrollbar { width:4px; }
+    .content::-webkit-scrollbar-thumb { background:var(--bg3); border-radius:4px; }
+
+    /* STATS */
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+    .stat-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; transition:border-color .2s; }
+    .stat-card:hover { border-color:var(--border2); }
+    .stat-label { font-size:11px; color:var(--text2); font-family:'DM Mono',monospace; letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; }
+    .stat-value { font-size:32px; font-weight:800; line-height:1; margin-bottom:6px; }
+    .stat-trend { font-size:12px; color:var(--green); font-family:'DM Mono',monospace; }
+    .stat-trend.down { color:var(--red); }
+
+    /* TABLE */
+    .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .section-title { font-size:16px; font-weight:700; }
+    .table-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+    table { width:100%; border-collapse:collapse; }
+    thead { background:var(--bg3); }
+    th { padding:12px 20px; text-align:left; font-size:11px; color:var(--text2); font-family:'DM Mono',monospace; letter-spacing:1px; text-transform:uppercase; font-weight:400; }
+    td { padding:14px 20px; font-size:13px; border-top:1px solid var(--border); }
+    tr:hover td { background:rgba(255,255,255,.02); }
+    .client-name { font-weight:700; display:flex; align-items:center; gap:10px; }
+    .client-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-family:'DM Mono',monospace; }
+    .badge-green { background:var(--green-bg); color:var(--green); }
+    .badge-red { background:var(--red-bg); color:var(--red); }
+    .badge-yellow { background:var(--yellow-bg); color:var(--yellow); }
+    .actions { display:flex; gap:6px; }
+
+    /* MODAL */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:50; opacity:0; pointer-events:none; transition:opacity .2s; }
+    .modal-overlay.open { opacity:1; pointer-events:all; }
+    .modal { background:var(--bg2); border:1px solid var(--border2); border-radius:20px; padding:32px; width:580px; max-height:85vh; overflow-y:auto; transform:translateY(20px); transition:transform .2s; }
+    .modal-overlay.open .modal { transform:translateY(0); }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+    .modal-title { font-size:20px; font-weight:800; }
+    .modal-close { background:var(--bg3); border:none; color:var(--text2); width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
+    .modal-close:hover { color:var(--text); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-group.full { grid-column:1/-1; }
+    .color-row { display:flex; gap:12px; align-items:center; }
+    .color-preview { width:36px; height:36px; border-radius:8px; border:1px solid var(--border2); flex-shrink:0; }
+    input[type="color"] { width:36px; height:36px; border:none; background:none; cursor:pointer; border-radius:8px; padding:0; }
+    .modal-footer { display:flex; justify-content:flex-end; gap:10px; margin-top:24px; padding-top:24px; border-top:1px solid var(--border); }
+
+    /* DETAIL */
+    .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px; }
+    .detail-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+    .detail-card-title { font-size:12px; color:var(--text2); font-family:'DM Mono',monospace; letter-spacing:1px; text-transform:uppercase; margin-bottom:16px; }
+    .info-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; }
+    .info-row:last-child { border-bottom:none; }
+    .info-label { color:var(--text2); }
+    .info-value { font-weight:600; font-family:'DM Mono',monospace; font-size:12px; }
+    .widget-code { background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; font-family:'DM Mono',monospace; font-size:12px; color:var(--accent2); word-break:break-all; margin-top:8px; }
+    .doc-list { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+    .doc-item { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--bg3); border-radius:var(--radius-sm); font-size:12px; font-family:'DM Mono',monospace; }
+    .doc-item-name { color:var(--text2); }
+    .doc-delete { background:none; border:none; color:var(--text3); cursor:pointer; font-size:14px; }
+    .doc-delete:hover { color:var(--red); }
+    .upload-zone { border:2px dashed var(--border2); border-radius:var(--radius); padding:24px; text-align:center; cursor:pointer; transition:border-color .2s; margin-top:12px; }
+    .upload-zone:hover { border-color:var(--accent); }
+    .upload-zone p { font-size:13px; color:var(--text2); margin-top:8px; }
+
+    /* VIEWS */
+    .view { display:none; }
+    .view.active { display:block; }
+
+    /* NOTIF */
+    .notif { position:fixed; bottom:24px; right:24px; background:var(--bg2); border:1px solid var(--border2); padding:12px 20px; border-radius:var(--radius-sm); font-size:13px; font-family:'DM Mono',monospace; box-shadow:0 8px 32px rgba(0,0,0,.4); z-index:200; transform:translateY(80px); transition:transform .3s; pointer-events:none; }
+    .notif.show { transform:translateY(0); }
+    .notif.success { border-color:var(--green); color:var(--green); }
+    .notif.error { border-color:var(--red); color:var(--red); }
+
+    /* LOADING */
+    .loading { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; margin-right:6px; vertical-align:middle; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    tr { animation:fadeUp .3s ease both; }
+
+    .champs-extra-list { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .champ-tag { display:flex; align-items:center; gap:6px; background:rgba(108,99,255,.15); border:1px solid rgba(108,99,255,.3); color:var(--accent2); padding:4px 10px; border-radius:20px; font-size:12px; font-family:'DM Mono',monospace; }
+    .champ-tag button { background:none; border:none; color:var(--accent2); cursor:pointer; font-size:14px; line-height:1; }
+    .champ-input-row { display:flex; gap:8px; margin-top:8px; }
+    .champ-input-row input { flex:1; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon">⚡</div>
+      <div><h1>ChatSaaS</h1><span>ADMIN PANEL</span></div>
+    </div>
+    <div class="login-title">Connexion</div>
+    <p class="login-sub">Accès réservé à l'administrateur</p>
+    <div class="form-group">
+      <label class="form-label">Mot de passe</label>
+      <input type="password" class="form-input" id="loginInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"/>
+    </div>
+    <button class="btn-login" onclick="login()">Accéder au panel →</button>
+    <p class="login-error" id="loginError">Mot de passe incorrect</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="appScreen" style="display:none">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div><div class="brand-text">ChatSaaS</div><div class="brand-sub">ADMIN v1.0</div></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Navigation</div>
+      <div class="nav-item active" onclick="showView('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="showView('clients')"><span class="nav-icon">🏢</span> Clients</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Système</div>
+      <div class="nav-item" onclick="showView('settings')"><span class="nav-icon">⚙️</span> Paramètres</div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="logout()">🚪 Déconnexion</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+        <div class="topbar-sub" id="topbarSub">Vue d'ensemble</div>
+      </div>
+      <div class="topbar-actions" id="topbarActions">
+        <button class="btn btn-primary" onclick="openModal()">+ Nouveau client</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dashboard">
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card"><div class="stat-label">Clients</div><div class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Messages</div><div class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Documents</div><div class="stat-value">—</div></div>
+          <div class="stat-card"><div class="stat-label">Actifs</div><div class="stat-value">—</div></div>
+        </div>
+        <div class="section-header">
+          <div class="section-title">Clients récents</div>
+          <button class="btn btn-ghost btn-sm" onclick="showView('clients')">Voir tous →</button>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Client</th><th>Statut</th><th>Messages</th><th>Documents</th><th>Créé le</th><th>Actions</th></tr></thead>
+          <tbody id="dashboardTable"><tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text2)">Chargement...</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- CLIENTS -->
+      <div class="view" id="view-clients">
+        <div class="table-wrap">
+          <table><thead><tr><th>Client</th><th>Statut</th><th>Messages</th><th>Documents</th><th>ID</th><th>Actions</th></tr></thead>
+          <tbody id="clientsTable"><tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text2)">Chargement...</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- DETAIL -->
+      <div class="view" id="view-detail">
+        <div id="detailContent"></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="view" id="view-settings">
+        <div class="detail-card" style="max-width:500px">
+          <div class="detail-card-title">Paramètres</div>
+          <div class="form-group">
+            <label class="form-label">URL de l'API</label>
+            <input type="text" class="form-input" id="apiUrl" value="http://localhost:5001"/>
+          </div>
+          <button class="btn btn-primary" onclick="saveSettings()">Sauvegarder</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- MODAL CLIENT -->
+<div class="modal-overlay" id="modalClient">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Nouveau client</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nom du client *</label>
+        <input type="text" class="form-input" id="f-nom" placeholder="Ex: Restaurant Dupont" oninput="autoId()"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">ID unique *</label>
+        <input type="text" class="form-input" id="f-id" placeholder="Ex: restaurant_dupont"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Couleur principale</label>
+        <div class="color-row">
+          <input type="color" id="f-color1" value="#6C63FF" oninput="updateColor(1)"/>
+          <div class="color-preview" id="prev1" style="background:#6C63FF"></div>
+          <span id="hex1" style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace">#6C63FF</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Couleur secondaire</label>
+        <div class="color-row">
+          <input type="color" id="f-color2" value="#A78BFA" oninput="updateColor(2)"/>
+          <div class="color-preview" id="prev2" style="background:#A78BFA"></div>
+          <span id="hex2" style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace">#A78BFA</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Titre du widget</label>
+        <input type="text" class="form-input" id="f-titre" placeholder="Ex: Notre assistant"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Statut</label>
+        <select class="form-input" id="f-statut">
+          <option value="actif">Actif</option>
+          <option value="test">En test</option>
+          <option value="inactif">Inactif</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">System Prompt *</label>
+        <textarea class="form-input" id="f-prompt" placeholder="Tu es un assistant commercial pour [Nom]..."></textarea>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Champs supplémentaires (ex: composition, allergènes)</label>
+        <div class="champ-input-row">
+          <input type="text" class="form-input" id="f-champ-input" placeholder="Ex: composition" onkeydown="if(event.key==='Enter')addChamp()"/>
+          <button class="btn btn-ghost" onclick="addChamp()">+ Ajouter</button>
+        </div>
+        <div class="champs-extra-list" id="champsExtraList"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" id="saveBtn" onclick="saveClient()">Créer le client →</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+const ADMIN_PASSWORD = 'admin123';
+let API_URL = localStorage.getItem('saas_api_url') || 'http://localhost:5001';
+let editingId = null;
+let champsExtra = [];
+
+// ── AUTH ──
+function login() {
+  const pwd = document.getElementById('loginInput').value;
+  if (pwd === ADMIN_PASSWORD) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'grid';
+    loadAll();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginInput').value = '';
+  }
+}
+
+function logout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('appScreen').style.display = 'none';
+}
+
+// ── API ──
+async function api(method, path, body = null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API_URL + path, opts);
+  return r.json();
+}
+
+// ── LOAD ──
+async function loadAll() {
+  await loadStats();
+  await loadClients();
+}
+
+async function loadStats() {
+  try {
+    const stats = await api('GET', '/admin/stats');
+    document.getElementById('statsGrid').innerHTML = `
+      <div class="stat-card"><div class="stat-label">Total clients</div><div class="stat-value">${stats.total_clients}</div><div class="stat-trend">↑ enregistrés</div></div>
+      <div class="stat-card"><div class="stat-label">Messages total</div><div class="stat-value">${stats.total_messages.toLocaleString()}</div><div class="stat-trend">↑ tous clients</div></div>
+      <div class="stat-card"><div class="stat-label">Documents</div><div class="stat-value">${stats.total_documents}</div><div class="stat-trend">↑ indexés</div></div>
+      <div class="stat-card"><div class="stat-label">Clients actifs</div><div class="stat-value">${stats.clients_actifs}</div><div class="stat-trend ${stats.clients_actifs < stats.total_clients ? 'down' : ''}">↑ en production</div></div>`;
+  } catch(e) { console.error(e); }
+}
+
+let allClients = {};
+
+async function loadClients() {
+  try {
+    allClients = await api('GET', '/admin/clients');
+    renderDashboardTable();
+    if (document.getElementById('view-clients').classList.contains('active')) {
+      renderClientsTable();
+    }
+  } catch(e) { console.error(e); }
+}
+
+// ── RENDER ──
+function badge(statut) {
+  if (statut === 'actif')   return '<span class="badge badge-green">● Actif</span>';
+  if (statut === 'test')    return '<span class="badge badge-yellow">● Test</span>';
+  return '<span class="badge badge-red">● Inactif</span>';
+}
+
+function clientRow(id, c, showDate = false) {
+  const col5 = showDate
+    ? `<span style="font-size:11px;color:var(--text2);font-family:'DM Mono',monospace">${c.date||'—'}</span>`
+    : `<code style="font-size:10px;color:var(--accent2);font-family:'DM Mono',monospace">${id}</code>`;
+  return `<tr>
+    <td><div class="client-name"><div class="client-dot" style="background:${c.color1||'#6C63FF'}"></div>${c.nom}</div></td>
+    <td>${badge(c.statut)}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:12px">${(c.messages||0).toLocaleString()}</td>
+    <td style="font-family:'DM Mono',monospace;font-size:12px">${(c.documents||[]).length}</td>
+    <td>${col5}</td>
+    <td><div class="actions">
+      <button class="btn btn-ghost btn-sm" onclick="showDetail('${id}')">Voir</button>
+      <button class="btn btn-ghost btn-sm" onclick="openEdit('${id}')">Éditer</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteClient('${id}')">Suppr.</button>
+    </div></td>
+  </tr>`;
+}
+
+function renderDashboardTable() {
+  const ids = Object.keys(allClients);
+  const tbody = document.getElementById('dashboardTable');
+  if (ids.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text2)">Aucun client — créez votre premier client !</td></tr>';
+    return;
+  }
+  tbody.innerHTML = ids.slice(0,5).map(id => clientRow(id, allClients[id], true)).join('');
+}
+
+function renderClientsTable() {
+  const ids = Object.keys(allClients);
+  const tbody = document.getElementById('clientsTable');
+  if (ids.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text2)">Aucun client</td></tr>';
+    return;
+  }
+  tbody.innerHTML = ids.map(id => clientRow(id, allClients[id])).join('');
+}
+
+// ── VIEWS ──
+function showView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+
+  const titles = {
+    dashboard: ['Dashboard', 'Vue d\'ensemble'],
+    clients:   ['Clients', 'Gérer vos clients'],
+    detail:    ['Fiche client', 'Détails et configuration'],
+    settings:  ['Paramètres', 'Configuration']
+  };
+  document.getElementById('topbarTitle').textContent = titles[view][0];
+  document.getElementById('topbarSub').textContent = titles[view][1];
+
+  const actions = {
+    dashboard: '<button class="btn btn-primary" onclick="openModal()">+ Nouveau client</button>',
+    clients:   '<button class="btn btn-primary" onclick="openModal()">+ Nouveau client</button>',
+    detail:    '<button class="btn btn-ghost btn-sm" onclick="showView(\'clients\')">← Retour</button>',
+    settings:  ''
+  };
+  document.getElementById('topbarActions').innerHTML = actions[view] || '';
+
+  if (view === 'dashboard') { document.querySelectorAll('.nav-item')[0].classList.add('active'); loadAll(); }
+  if (view === 'clients')   { document.querySelectorAll('.nav-item')[1].classList.add('active'); renderClientsTable(); }
+  if (view === 'settings')  { document.querySelectorAll('.nav-item')[2].classList.add('active'); document.getElementById('apiUrl').value = API_URL; }
+}
+
+function showDetail(clientId) {
+  showView('detail');
+  renderDetail(clientId);
+}
+
+function renderDetail(clientId) {
+  const c = allClients[clientId];
+  if (!c) return;
+
+  const docs = (c.documents||[]).map(d =>
+    `<div class="doc-item">
+      <span class="doc-item-name">📄 ${d}</span>
+      <button class="doc-delete" onclick="deleteDoc('${clientId}','${d}')">✕</button>
+    </div>`
+  ).join('') || '<p style="font-size:12px;color:var(--text2);padding:8px 0">Aucun document</p>';
+
+  const widgetCode = `&lt;script src="${API_URL}/widget.js?client=${clientId}"&gt;&lt;/script&gt;`;
+
+  document.getElementById('detailContent').innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+      <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,${c.color1||'#6C63FF'},${c.color2||'#A78BFA'});display:flex;align-items:center;justify-content:center;font-size:22px">💬</div>
+      <div>
+        <div style="font-size:24px;font-weight:800">${c.nom}</div>
+        <div style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace">${clientId} · ${badge(c.statut)}</div>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <div class="detail-card-title">Informations</div>
+        <div class="info-row"><span class="info-label">ID</span><span class="info-value">${clientId}</span></div>
+        <div class="info-row"><span class="info-label">Statut</span>${badge(c.statut)}</div>
+        <div class="info-row"><span class="info-label">Messages</span><span class="info-value">${(c.messages||0).toLocaleString()}</span></div>
+        <div class="info-row"><span class="info-label">Documents</span><span class="info-value">${(c.documents||[]).length}</span></div>
+        <div class="info-row"><span class="info-label">Créé le</span><span class="info-value">${c.date||'—'}</span></div>
+        <div class="info-row"><span class="info-label">Champs extra</span><span class="info-value">${(c.champs_extra||[]).join(', ')||'—'}</span></div>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-card-title">System Prompt</div>
+        <div style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;line-height:1.6;max-height:150px;overflow-y:auto;background:var(--bg);padding:12px;border-radius:8px;margin-bottom:12px">${c.prompt||'Aucun prompt'}</div>
+        <button class="btn btn-ghost btn-sm" onclick="openEdit('${clientId}')">Modifier</button>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <div class="detail-card-title">Documents</div>
+        <div class="doc-list">${docs}</div>
+        <div class="upload-zone" onclick="document.getElementById('fileUpload').click()">
+          <div style="font-size:24px">📁</div>
+          <p>Cliquer pour uploader (.txt, .pdf)</p>
+          <input type="file" id="fileUpload" style="display:none" accept=".txt,.pdf" multiple onchange="uploadDocs('${clientId}',this)"/>
+        </div>
+        <button class="btn btn-success btn-sm" style="margin-top:12px;width:100%" onclick="convertDocs('${clientId}')">
+          ⚡ Générer produits.json
+        </button>
+      </div>
+
+      <div class="detail-card">
+        <div class="detail-card-title">Code widget</div>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:8px">Coller avant &lt;/body&gt; sur le site client :</p>
+        <div class="widget-code">${widgetCode}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:12px" onclick="copyWidget('${clientId}')">📋 Copier</button>
+      </div>
+    </div>`;
+}
+
+// ── MODAL ──
+function openModal() {
+  editingId = null;
+  champsExtra = [];
+  document.getElementById('modalTitle').textContent = 'Nouveau client';
+  document.getElementById('f-nom').value = '';
+  document.getElementById('f-id').value = '';
+  document.getElementById('f-id').disabled = false;
+  document.getElementById('f-prompt').value = '';
+  document.getElementById('f-titre').value = '';
+  document.getElementById('f-statut').value = 'actif';
+  document.getElementById('f-color1').value = '#6C63FF';
+  document.getElementById('f-color2').value = '#A78BFA';
+  document.getElementById('prev1').style.background = '#6C63FF';
+  document.getElementById('prev2').style.background = '#A78BFA';
+  document.getElementById('hex1').textContent = '#6C63FF';
+  document.getElementById('hex2').textContent = '#A78BFA';
+  document.getElementById('saveBtn').textContent = 'Créer le client →';
+  renderChampsExtra();
+  document.getElementById('modalClient').classList.add('open');
+}
+
+function openEdit(clientId) {
+  const c = allClients[clientId];
+  if (!c) return;
+  editingId = clientId;
+  champsExtra = [...(c.champs_extra||[])];
+  document.getElementById('modalTitle').textContent = 'Modifier ' + c.nom;
+  document.getElementById('f-nom').value = c.nom;
+  document.getElementById('f-id').value = clientId;
+  document.getElementById('f-id').disabled = true;
+  document.getElementById('f-prompt').value = c.prompt || '';
+  document.getElementById('f-titre').value = c.titre || '';
+  document.getElementById('f-statut').value = c.statut || 'actif';
+  document.getElementById('f-color1').value = c.color1 || '#6C63FF';
+  document.getElementById('f-color2').value = c.color2 || '#A78BFA';
+  document.getElementById('prev1').style.background = c.color1 || '#6C63FF';
+  document.getElementById('prev2').style.background = c.color2 || '#A78BFA';
+  document.getElementById('hex1').textContent = c.color1 || '#6C63FF';
+  document.getElementById('hex2').textContent = c.color2 || '#A78BFA';
+  document.getElementById('saveBtn').textContent = 'Sauvegarder →';
+  renderChampsExtra();
+  document.getElementById('modalClient').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalClient').classList.remove('open');
+}
+
+function autoId() {
+  if (!editingId) {
+    document.getElementById('f-id').value = document.getElementById('f-nom').value
+      .toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  }
+}
+
+function updateColor(n) {
+  const val = document.getElementById(`f-color${n}`).value;
+  document.getElementById(`prev${n}`).style.background = val;
+  document.getElementById(`hex${n}`).textContent = val;
+}
+
+function addChamp() {
+  const input = document.getElementById('f-champ-input');
+  const val = input.value.trim().toLowerCase().replace(/\s+/g,'_');
+  if (val && !champsExtra.includes(val)) {
+    champsExtra.push(val);
+    renderChampsExtra();
+  }
+  input.value = '';
+}
+
+function removeChamp(champ) {
+  champsExtra = champsExtra.filter(c => c !== champ);
+  renderChampsExtra();
+}
+
+function renderChampsExtra() {
+  document.getElementById('champsExtraList').innerHTML = champsExtra.map(c =>
+    `<div class="champ-tag">${c}<button onclick="removeChamp('${c}')">✕</button></div>`
+  ).join('');
+}
+
+async function saveClient() {
+  const nom    = document.getElementById('f-nom').value.trim();
+  const id     = document.getElementById('f-id').value.trim().replace(/\s+/g,'_').toLowerCase();
+  const prompt = document.getElementById('f-prompt').value.trim();
+  const titre  = document.getElementById('f-titre').value.trim();
+  const statut = document.getElementById('f-statut').value;
+  const color1 = document.getElementById('f-color1').value;
+  const color2 = document.getElementById('f-color2').value;
+
+  if (!nom || !id) { showNotif('Nom et ID obligatoires', 'error'); return; }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span>Sauvegarde...';
+
+  try {
+    await api('POST', '/admin/clients', {
+      id, nom, prompt, titre, statut, color1, color2,
+      champs_extra: champsExtra
+    });
+    allClients = await api('GET', '/admin/clients');
+    closeModal();
+    showNotif(editingId ? 'Client modifié ✓' : 'Client créé ✓', 'success');
+    renderDashboardTable();
+    renderClientsTable();
+    loadStats();
+    if (editingId) renderDetail(editingId);
+  } catch(e) {
+    showNotif('Erreur lors de la sauvegarde', 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = editingId ? 'Sauvegarder →' : 'Créer le client →';
+}
+
+async function deleteClient(clientId) {
+  if (!confirm(`Supprimer ${allClients[clientId]?.nom} ?`)) return;
+  await api('DELETE', `/admin/clients/${clientId}`);
+  allClients = await api('GET', '/admin/clients');
+  showNotif('Client supprimé', 'success');
+  renderDashboardTable();
+  renderClientsTable();
+  loadStats();
+  showView('clients');
+}
+
+// ── DOCUMENTS ──
+async function uploadDocs(clientId, input) {
+  const files = Array.from(input.files);
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append('file', file);
+    await fetch(`${API_URL}/admin/clients/${clientId}/documents`, {
+      method: 'POST', body: formData
+    });
+  }
+  allClients = await api('GET', '/admin/clients');
+  showNotif(`${files.length} document(s) uploadé(s) ✓`, 'success');
+  renderDetail(clientId);
+}
+
+async function deleteDoc(clientId, docName) {
+  await api('DELETE', `/admin/clients/${clientId}/documents/${docName}`);
+  allClients = await api('GET', '/admin/clients');
+  showNotif('Document supprimé', 'success');
+  renderDetail(clientId);
+}
+
+async function convertDocs(clientId) {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading"></span>Génération en cours...';
+  try {
+    const result = await api('POST', `/admin/clients/${clientId}/convert`);
+    if (result.success) {
+      showNotif(`✓ ${result.produits} produits extraits !`, 'success');
+    } else {
+      showNotif('Erreur : ' + result.error, 'error');
+    }
+  } catch(e) {
+    showNotif('Erreur lors de la conversion', 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '⚡ Générer produits.json';
+}
+
+// ── WIDGET ──
+function copyWidget(clientId) {
+  const code = `<script src="${API_URL}/widget.js?client=${clientId}"><\/script>`;
+  navigator.clipboard.writeText(code);
+  showNotif('Code copié ✓', 'success');
+}
+
+// ── SETTINGS ──
+function saveSettings() {
+  API_URL = document.getElementById('apiUrl').value.trim();
+  localStorage.setItem('saas_api_url', API_URL);
+  showNotif('Paramètres sauvegardés ✓', 'success');
+}
+
+// ── NOTIF ──
+function showNotif(msg, type='success') {
+  const n = document.getElementById('notif');
+  n.textContent = msg; n.className = `notif ${type} show`;
+  setTimeout(() => n.className = 'notif', 3000);
+}
+</script>
+</body>
+</html>
