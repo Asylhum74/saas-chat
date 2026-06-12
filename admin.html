@@ -517,7 +517,7 @@ function renderDetail(clientId) {
         <div class="upload-zone" onclick="document.getElementById('fileUpload').click()">
           <div style="font-size:24px">📁</div>
           <p>Cliquer pour uploader (.txt, .pdf)</p>
-          <input type="file" id="fileUpload" style="display:none" accept=".txt,.pdf" multiple onchange="uploadDocs('${clientId}',this)"/>
+          <input type="file" id="fileUpload" style="display:none" accept=".txt,.pdf,.json" multiple onchange="uploadDocs('${clientId}',this)"/>
         </div>
         <button class="btn btn-success btn-sm" style="margin-top:12px;width:100%" onclick="convertDocs('${clientId}')">
           ⚡ Générer produits.json
