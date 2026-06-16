@@ -39,22 +39,29 @@ def convertir_lot(client_id, fichiers, champs_extra):
         champs_str = "\n".join([f'      "{champ}": "valeur ou null",' for champ in champs_extra])
         champs_str = "\n" + champs_str
 
-    prompt = f"""Analyse ces documents et extrais tous les produits mentionnés.
-Retourne UNIQUEMENT un JSON valide sans texte avant ou après, sans backticks :
-{{
-  "produits": [
-    {{
-      "nom": "nom exact du produit",
-      "categorie": "catégorie du produit",
-      "description": "description complète",
-      "prix": "prix si mentionné sinon null",{champs_str}
-      "tags": ["synonyme1", "synonyme2", "cas d'usage", "mots clés"]
-    }}
-  ]
-}}
-Pour les tags, inclus tous les synonymes, cas d'usage et mots clés possibles.
-{"Pour les champs supplémentaires (" + ", ".join(champs_extra) + "), extrait ces informations précisément." if champs_extra else ""}"""
+   prompt = f"""Analyse ces documents et extrais tous les produits mentionnés.
 
+    RÈGLES STRICTES :
+    - Extrais TOUS les produits sans exception
+    - Pour la description : copie le texte descriptif du document le plus fidèlement possible, ne résume pas
+    - Pour les tags : inclus TOUS ces éléments séparément : nom du produit, catégorie, ingrédients principaux, effets, zone du corps, type d'utilisation, synonymes courants
+    - Ne réécris pas, ne résume pas, ne reformule pas — copie fidèlement les informations du document
+    - Si une information n'est pas dans le document, mets null
+    
+    Retourne UNIQUEMENT un JSON valide sans texte avant ou après, sans backticks :
+    {{
+      "produits": [
+        {{
+          "nom": "nom EXACT du produit tel qu'il apparaît dans le document",
+          "categorie": "catégorie exacte",
+          "description": "texte descriptif complet copié fidèlement depuis le document",
+          "prix": "prix exact si mentionné sinon null",{champs_str}
+          "tags": ["tous", "les", "mots", "clés", "possibles", "synonymes", "inclus"]
+        }}
+      ]
+    }}
+    {"Pour les champs supplémentaires (" + ", ".join(champs_extra) + "), copie ces informations exactement depuis les documents sans les résumer." if champs_extra else ""}"""
+    
     messages_content.append({"type": "text", "text": prompt})
 
     response = claude.messages.create(
