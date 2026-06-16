@@ -58,7 +58,7 @@ Pour les tags, inclus tous les synonymes, cas d'usage et mots clés possibles.
     messages_content.append({"type": "text", "text": prompt})
 
     response = claude.messages.create(
-        model="claude-sonnet-4-20250514",
+        model="claude-sonnet-4-6",
         max_tokens=4096,
         messages=[{"role": "user", "content": messages_content}]
     )
