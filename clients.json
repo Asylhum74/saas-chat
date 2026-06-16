@@ -10,36 +10,8 @@
       "composition"
     ],
     "messages": 8,
-    "documents": [
-      "BOUGIE DE MASSAGE au parfum affolant.txt",
-      "BOUGIE DE MASSAGE au parfum enivrant.txt",
-      "BRUME INTIME au parfum enivrant.txt",
-      "COFFRET BANDEAU EN SATIN NOIR.txt",
-      "COFFRET PLUME À CARESSES.txt",
-      "EAU DE PARFUM Réjouissance pour femme.txt",
-      "EAU DE PARFUM Réjouissance pour homme.txt",
-      "ÉLIXIR DE COUPLE sensations & plaisirs partagés.txt",
-      "GEL ORGASMIQUE AU CBD Confort & lâcher prise.txt",
-      "GEL ORGASMIQUE pour le clitoris.txt",
-      "GEL ORGASMIQUE pour le point G.txt",
-      "GEL ORGASMIQUE VIBRANT Excitation intense.txt",
-      "HUILE DE MASSAGE SENSUELLE au parfum affolant.txt",
-      "HUILE DE MASSAGE SENSUELLE au parfum enivrant.txt",
-      "LOVFINGER stimulateur clitoridien.txt",
-      "LUBRIFIANT ANAL confort & performant.txt",
-      "LUBRIFIANT INTIME 100% SILICONE - fluide.txt",
-      "LUBRIFIANT INTIME 100% SILICONE - médium.txt",
-      "LUBRIFIANT INTIME NATUREL à l'aloe vera bio.txt",
-      "LUBRIFIANT INTIME NATUREL aux algue vio sans glycérine.txt",
-      "LUBRIFIANT INTIME NATUREL effet chaud.txt",
-      "LUBRIFIANT INTIME NATUREL effet froid.txt",
-      "LUBRIFIANT INTIME NATUREL hydratant.txt",
-      "MASSAGE INTÉGRAL GOURMAND Ananas Thé vert.txt",
-      "MASSAGE INTÉGRAL GOURMAND Pêche Abricot.txt",
-      "MASSAGE INTÉGRAL LUBRIFIANT.txt",
-      "MASSAGE LUBRIFIANT NATUREL fleur d'oranger.txt",
-      "PROLONGATEUR DE PLAISIR masculin.txt",
-      "SÉRUM INTIME Confort et protection de la vulve et du pénis.txt"
+    "documents":[
+      "produits.json"
     ],
     "date": "05/06/2026"
   }
