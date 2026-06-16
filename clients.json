@@ -1,13 +1,13 @@
-{
-  "demo": {
+"demo": {
     "nom": "demo",
-    "titre": "Notre assistant",
-    "color1": "#6166ff",
-    "color2": "#8996fb",
-    "prompt": "Tu es un assistant commercial bienveillant",
+    "titre": "",
+    "color1": "#6c63ff",
+    "color2": "#a78bfa",
+    "prompt": "Tu es un assistant commercial pour la société demo",
     "statut": "actif",
     "champs_extra": [
-      "composition"
+      "composition",
+      "précaution_d'usage"
     ],
     "messages": 8,
     "documents":[
