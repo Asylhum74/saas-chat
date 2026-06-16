@@ -64,7 +64,7 @@ def recherche_produit(client_id, query, categorie=None):
     # Trier par score
     resultats.sort(key=lambda x: x['_score'], reverse=True)
     # Retourner les 5 meilleurs sans le score
-    return [{k: v for k, v in p.items() if k != '_score'} for p in resultats[:5]]
+    return [{k: v for k, v in p.items() if k != '_score'} for p in resultats[:10]]
 
 # ── Lister toutes les catégories ──
 def lister_categories(client_id):
