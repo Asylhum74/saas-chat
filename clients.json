@@ -1,18 +1,19 @@
-"demo": {
-    "nom": "demo",
-    "titre": "",
-    "color1": "#6c63ff",
-    "color2": "#a78bfa",
-    "prompt": "Tu es un assistant commercial pour la société demo",
-    "statut": "actif",
-    "champs_extra": [
-      "composition",
-      "précaution_d'usage"
-    ],
-    "messages": 8,
-    "documents":[
-      "produits.json"
-    ],
-    "date": "05/06/2026"
-  }
+{
+    "demo": {
+        "nom": "demo",
+        "titre": "",
+        "color1": "#6c63ff",
+        "color2": "#a78bfa",
+        "prompt": "Tu es un assistant commercial pour la société demo",
+        "statut": "actif",
+        "champs_extra": [
+          "composition",
+          "précaution_d'usage"
+        ],
+        "messages": 8,
+        "documents":[
+          "produits.json"
+        ],
+        "date": "05/06/2026"
+      }
 }
