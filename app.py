@@ -36,34 +36,35 @@ def recherche_produit(client_id, query, categorie=None):
     if not produits:
         return []
 
-    query_lower = query.lower()
+    # Découper la requête en mots individuels
+    mots = [m.strip() for m in query.lower().split() if len(m) > 2]
     resultats = []
 
     for p in produits:
         score = 0
-        # Recherche dans le nom
-        if query_lower in p.get('nom', '').lower():
-            score += 10
-        # Recherche dans les tags
-        for tag in p.get('tags', []):
-            if query_lower in tag.lower() or tag.lower() in query_lower:
-                score += 5
-        # Recherche dans la description
-        if query_lower in p.get('description', '').lower():
-            score += 3
-        # Recherche dans la catégorie
-        if query_lower in p.get('categorie', '').lower():
-            score += 4
-        # Filtre catégorie si précisé
-        if categorie and categorie.lower() not in p.get('categorie', '').lower():
+        nom = p.get('nom', '').lower()
+        desc = p.get('description', '').lower()
+        cat = p.get('categorie', '').lower()
+        tags = ' '.join(p.get('tags', [])).lower()
+        tout = f"{nom} {desc} {cat} {tags}"
+
+        for mot in mots:
+            if mot in nom:   score += 10
+            if mot in cat:   score += 6
+            if mot in tags:  score += 5
+            if mot in desc:  score += 3
+
+        # Bonus si plusieurs mots matchent
+        mots_trouves = sum(1 for m in mots if m in tout)
+        score += mots_trouves * 3
+
+        if categorie and categorie.lower() not in cat:
             score = 0
 
         if score > 0:
             resultats.append({**p, '_score': score})
 
-    # Trier par score
     resultats.sort(key=lambda x: x['_score'], reverse=True)
-    # Retourner les 5 meilleurs sans le score
     return [{k: v for k, v in p.items() if k != '_score'} for p in resultats[:10]]
 
 # ── Lister toutes les catégories ──
