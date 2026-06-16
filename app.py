@@ -135,7 +135,7 @@ def chat():
 
     # ── Premier appel à Claude ──
     response = claude.messages.create(
-        model="claude-haiku-4-5-20251001",
+       model="claude-sonnet-4-6",
         max_tokens=1024,
         system=system_prompt,
         tools=tools,
@@ -180,7 +180,7 @@ def chat():
 
         # Nouvel appel à Claude avec les résultats
         response = claude.messages.create(
-            model="claude-haiku-4-5-20251001",
+            model="claude-sonnet-4-6",
             max_tokens=1024,
             system=system_prompt,
             tools=tools,
